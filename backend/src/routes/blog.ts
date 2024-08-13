@@ -54,13 +54,10 @@ blogRouter.post('/', async (c) => {
                 return c.json({ message: 'Invalid post body' })
         }
         const data = {
-                title: body.title,
-                content: body.content,
-                authorId: c.get('userId'),
-                published : body.published ? body.published : false
+                ...body,
+                authorId: c.get('userId')
         }
-
-        const post = await prisma.post.create({data})
+        const post = await prisma.post.create({ data })
 
         return c.json({ id: post.id })
 });
@@ -73,7 +70,7 @@ blogRouter.get('/allblogs', async (c) => {
         const { pg, sort } = c.req.query();
         const pageNumber = pg ? parseInt(pg) : 1;
         const pageSize = 2;
-        const skip = (pageNumber - 1) * pageSize;       
+        const skip = (pageNumber - 1) * pageSize;
 
         const blogs = await prisma.post.findMany({
                 where: {
@@ -83,7 +80,7 @@ blogRouter.get('/allblogs', async (c) => {
                         createdAt: sort === 'asc' ? 'asc' : 'desc'
                 },
                 skip,
-                take:pageSize
+                take: pageSize
         }
         );
 
@@ -98,7 +95,7 @@ blogRouter.get('/drafts', async (c) => {
         const { pg, sort } = c.req.query();
         const pageNumber = pg ? parseInt(pg) : 1;
         const pageSize = 2;
-        const skip = (pageNumber - 1) * pageSize; 
+        const skip = (pageNumber - 1) * pageSize;
 
         const blogs = await prisma.post.findMany({
                 where: {
@@ -109,7 +106,7 @@ blogRouter.get('/drafts', async (c) => {
                         createdAt: sort === 'asc' ? 'asc' : 'desc'
                 },
                 skip,
-                take:pageSize
+                take: pageSize
         }
         );
         return c.json({ blogs });
@@ -132,7 +129,7 @@ blogRouter.put('/:id', async (c) => {
         // @ts-ignore
         const prisma: PrismaClient = c.get('prisma');
         const id = c.req.param('id')
-
+        const userId = c.get('userId')
         const body = await c.req.json();
         const { success } = updateBlogInput.safeParse(body);
         if (!success) {
@@ -140,14 +137,32 @@ blogRouter.put('/:id', async (c) => {
                 return c.json({ message: 'Invalid post body' })
         }
 
+        try {
+                const foundBlog = await prisma.post.findFirst({
+                        where: {
+                                id,
+                                authorId: userId
+                        }
+                })
+                if (!foundBlog) {
+                        throw new HTTPException(403, { message: 'User is not the creator of the blog' })
+                }
+        }
+        catch (e) {
+                console.log(e);
+                throw new HTTPException(403, { message: 'User is not the creator of the blog' })
+        }
+
+        const data = {
+                ...body,
+                updatedAt: new Date()
+        }
+
         const post = await prisma.post.update({
                 where: {
                         id
                 },
-                data: {
-                        title: body.title,
-                        content: body.content
-                }
+                data: data
         })
 
         return c.json({ id: post.id })
