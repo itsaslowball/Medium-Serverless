@@ -1,8 +1,10 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
 import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { userRouter } from './routes/user'
 import { blogRouter } from './routes/blog'
+
 
 
 const app = new Hono<{
@@ -12,7 +14,21 @@ const app = new Hono<{
 }
   >()
 
+app.use(
+  '/*',
+  cors({
+    origin: '*',
+    allowHeaders: ['X-Custom-Header', 'Upgrade-Insecure-Requests', 'Content-Type', "authorization"],
+    allowMethods: ['POST', 'GET', 'OPTIONS'],
+    exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
+    maxAge: 600,
+    credentials: true,
+  })
+);
+
+
  app.use('/*', async (c, next) => { 
+  
   const prisma = new PrismaClient({
     datasourceUrl: c.env?.DATABASE_URL,
   }).$extends(withAccelerate());

@@ -16,6 +16,10 @@ export const blogRouter = new Hono<{
 >();
 
 blogRouter.use('/*', async (c, next) => {
+        const url = c.req.url;
+        if (url.includes('allblogs')) { 
+                await next();
+        }
         let token = c.req.header('authorization') || "";
         token = token.split(' ')[1];
         if (!token) {
@@ -72,6 +76,12 @@ blogRouter.get('/allblogs', async (c) => {
         const pageSize = 2;
         const skip = (pageNumber - 1) * pageSize;
 
+        const total = await prisma.post.count({
+                where: {
+                        published: true
+                }
+        });
+
         const blogs = await prisma.post.findMany({
                 where: {
                         published: true
@@ -84,7 +94,25 @@ blogRouter.get('/allblogs', async (c) => {
         }
         );
 
-        return c.json({ blogs });
+        const newBlogs = blogs.map((blog) => {
+                let { content } = blog;
+                let words = content.split(' ');
+                if (words.length < 3) {
+                        return blog;
+                }
+                content = words.slice(0, 3).join(' ') + '...';
+                return { ...blog, content }
+        })
+
+        console.log(newBlogs);
+
+        const res = {
+                totalPage: Math.ceil(total / pageSize),
+                pageNumber,
+                pageSize,
+        }
+
+        return c.json({ blogs: newBlogs, pagination: res });
 });
 
 blogRouter.get('/drafts', async (c) => {
