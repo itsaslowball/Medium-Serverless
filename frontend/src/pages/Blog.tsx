@@ -1,11 +1,10 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import * as api from '../api-client';
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 export const Blog = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const { data: blog, isError, isLoading } = useQuery({
