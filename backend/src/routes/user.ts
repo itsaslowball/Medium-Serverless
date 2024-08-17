@@ -1,13 +1,17 @@
 import { Hono } from "hono";
 import { PrismaClient } from '@prisma/client/edge'
 import { sign } from 'hono/jwt'
-import {  signInInput, signUpInput } from "@priyans34/medium-common";
+import { signInInput, signUpInput } from "@priyans34/medium-common";
+import {
+        setCookie,
+} from 'hono/cookie'
 
 
 export const userRouter = new Hono<{
         Bindings: {
                 DATABASE_URL: string,
                 JWT_SECRET: string,
+                REFRESH_TOKEN_SECRET: string,
         }
 }
 >();
@@ -32,6 +36,30 @@ userRouter.post('signup', async (c) => {
         if (!user) {
                 return c.json({ message: "Internal Server Error" });
         }
+
+
+        const refreshPayload = {
+                id: user.id,
+                exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // Token expires in 7 days
+        }
+        const refreshsecret = c.env?.REFRESH_TOKEN_SECRET
+        const refreshToken = await sign(refreshPayload, refreshsecret)
+
+        //update the refresh token in the database
+        await prisma.user.update({
+                where: {
+                        id: user.id
+                },
+                data: {
+                        refreshToken
+                }
+        })
+
+        //set the refresh token in the cookie
+        setCookie(c, 'refresh_token', refreshToken, {
+                path: '/',
+                sameSite: 'Strict',
+        });
 
         const payload = {
                 id: user.id,
@@ -62,6 +90,31 @@ userRouter.post('signin', async (c) => {
                 c.status(403);
                 return c.json({ message: 'Invalid email or password' })
         }
+
+        const refreshPayload = {
+                id: user.id,
+                exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // Token expires in 7 days
+        }
+        const refreshsecret = c.env?.REFRESH_TOKEN_SECRET
+        const refreshToken = await sign(refreshPayload, refreshsecret)
+
+        //update the refresh token in the database
+        await prisma.user.update({
+                where: {
+                        id: user.id
+                },
+                data: {
+                        refreshToken
+                }
+        })
+
+
+        //set the refresh token in the cookie
+        setCookie(c, 'refresh_token', refreshToken, {
+                path: '/',
+                sameSite: 'Strict',
+        });
+
 
         const payload = {
                 id: user.id,
