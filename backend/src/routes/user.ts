@@ -61,7 +61,9 @@ userRouter.post('signup', async (c) => {
         //set the refresh token in the cookie
         setCookie(c, 'refresh_token', refreshToken, {
                 httpOnly: true,
-                sameSite: 'strict'
+                secure: true,
+                sameSite: 'None',
+                expires: new Date(Date.now() + 86400000)
         });
 
         const payload = {
@@ -115,7 +117,9 @@ userRouter.post('signin', async (c) => {
         //set the refresh token in the cookie
         setCookie(c, 'refresh_token', refreshToken, {
                 httpOnly: true,
-                sameSite: 'strict',
+                secure: true,
+                sameSite: 'None',
+                expires: new Date(Date.now() + 86400000)
         });
 
 
@@ -154,7 +158,10 @@ userRouter.post('signout', async (c) => {
                         data: { refreshToken: "" }
                 });
 
-                deleteCookie(c, 'refresh_token')
+                deleteCookie(c, 'refresh_token', {
+                        path: '/',
+                        secure: true
+                })
                 c.status(200);
                 return c.json({ message: 'Signed out successfully' });
         } catch (error) {
