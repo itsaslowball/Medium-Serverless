@@ -104,7 +104,6 @@ blogRouter.get('/allblogs', async (c) => {
                 return { ...blog, content }
         })
 
-        console.log(newBlogs);
 
         const res = {
                 totalPage: Math.ceil(total / pageSize),
@@ -159,7 +158,6 @@ blogRouter.put('/:id', async (c) => {
         const userId = c.get('userId')
         const body = await c.req.json();
 
-        console.log(body);
 
         const { success } = updateBlogInput.safeParse(body);
         if (!success) {
