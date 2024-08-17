@@ -43,11 +43,13 @@ export const signin = async (formData: SignInInput) => {
 }
 
 export const logout = async () => {
+        const token = localStorage.getItem('token');
         try {
                 const response = await fetch(`${url}/api/v1/user/signout`, {
                         method: "POST",
                         headers: {
                                 "Content-Type": "application/json",
+                                authorization: `Bearer ${token}`
                         },
                         credentials: 'include'
                 });

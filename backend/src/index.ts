@@ -18,7 +18,7 @@ const app = new Hono<{
 app.use(
   '/*',
   cors({
-    origin: 'https://medium-serverless.onrender.com/',
+    origin: 'https://medium-serverless.onrender.com',
     allowHeaders: ['X-Custom-Header', 'Upgrade-Insecure-Requests', 'Content-Type', 'authorization'],
     allowMethods: ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE'],
     exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
