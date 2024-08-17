@@ -158,10 +158,12 @@ userRouter.post('signout', async (c) => {
                         data: { refreshToken: "" }
                 });
 
-                deleteCookie(c, 'refresh_token', {
-                        path: '/',
-                        secure: true
-                })
+                setCookie(c, 'refresh_token', '', {
+                        httpOnly: true,
+                        secure: true,
+                        sameSite: 'None',
+                        expires: new Date(0)
+                });
                 c.status(200);
                 return c.json({ message: 'Signed out successfully' });
         } catch (error) {
