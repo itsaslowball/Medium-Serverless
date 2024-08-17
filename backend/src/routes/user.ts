@@ -4,6 +4,7 @@ import { sign, verify } from 'hono/jwt'
 import { signInInput, signUpInput } from "@priyans34/medium-common";
 import {
         deleteCookie,
+        getCookie,
         setCookie,
 } from 'hono/cookie'
 
@@ -59,8 +60,8 @@ userRouter.post('signup', async (c) => {
 
         //set the refresh token in the cookie
         setCookie(c, 'refresh_token', refreshToken, {
-                path: '/',
-                sameSite: 'Strict',
+                httpOnly: true,
+                sameSite: 'strict'
         });
 
         const payload = {
@@ -112,7 +113,10 @@ userRouter.post('signin', async (c) => {
 
 
         //set the refresh token in the cookie
-        setCookie(c, 'refresh_token', refreshToken);
+        setCookie(c, 'refresh_token', refreshToken, {
+                httpOnly: true,
+                sameSite: 'strict',
+        });
 
 
         const payload = {
@@ -128,16 +132,15 @@ userRouter.post('signout', async (c) => {
         // @ts-ignore
         const prisma: PrismaClient = c.get('prisma');
 
-        let token = c.req.header('authorization') || "";
-        token = token.split(' ')[1];
+        let token = getCookie(c, 'refresh_token');
+        
         if (!token) {
                 c.status(401);
                 return c.json({ message: 'Unauthorized' });
         }
 
-        const secret = c.env?.JWT_SECRET;
+        const secret = c.env?.REFRESH_TOKEN_SECRET;
         try {
-                // Verify the token and ensure it returns a valid id
                 const response: any = await verify(token, secret);
                 const id: string = response?.id;
 
@@ -146,7 +149,6 @@ userRouter.post('signout', async (c) => {
                         return c.json({ message: 'Unauthorized' });
                 }
 
-                // Update the user record
                 await prisma.user.update({
                         where: { id },
                         data: { refreshToken: "" }

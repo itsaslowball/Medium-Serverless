@@ -3,6 +3,8 @@ import { useState } from "react";
 import * as api from '../api-client'
 import {SignUpInput } from '@priyans34/medium-common'
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { login } from "../app/authSlice";
 
 
 
@@ -14,10 +16,11 @@ export const Signup = () => {
     name: ""
   })
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const {mutate, isPending} = useMutation({
     mutationFn: api.signup,
     onSuccess: (data) => {
-      localStorage.setItem('token', data.jwt)
+      dispatch(login(data.jwt))
       navigate('/')
     },
   })

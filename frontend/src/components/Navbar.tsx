@@ -24,8 +24,9 @@ export const Navbar = () => {
                         navigate('/');
                 },
                 onError: (error) => {
-                        console.log(error);
+                        console.error(error);
                 }
+
         })
 
         const handleLogout = () => {

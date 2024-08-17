@@ -43,20 +43,15 @@ export const signin = async (formData: SignInInput) => {
 }
 
 export const logout = async () => {
-        const token = localStorage.getItem('token');
         try {
                 const response = await fetch(`${url}/api/v1/user/signout`, {
                         method: "POST",
                         headers: {
-                                "Content-Type": "application/json",
-                                authorization: `Bearer ${token}`
+                                "Content-Type": "application/json"
                         },
                         credentials: 'include'
                 });
                 const res = await response.json();
-                if (!res.ok) {
-                        throw new Error("Failed to logout");
-                }
                 return res;
         } catch (error) {
                 throw new Error("Failed to logout");
