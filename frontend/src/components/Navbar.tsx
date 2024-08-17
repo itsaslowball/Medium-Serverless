@@ -1,19 +1,25 @@
 import { useDispatch } from "react-redux";
-import { checkLogIn } from "../app/authSlice";
+import { checkLogIn, logout } from "../app/authSlice";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export const Navbar = () => {
 
         const dispatch = useDispatch();
+        const navigate = useNavigate();
 
         dispatch(checkLogIn());
 
-        const isLoggedIn = useSelector((state: any) =>
+        let isLoggedIn = useSelector((state: any) =>
                 state.auth.isLoggedIn
         ); 
 
-        console.log("isLoggedIN...",isLoggedIn);
+        const handleLogout = () => {
+                dispatch(logout());
+                isLoggedIn = false;
+                navigate('/');
+        };
+
 
         return (
                 <div className='flex flex-row items-center min-h-16 border-b-2 border-slate-300 justify-between'>
@@ -22,8 +28,9 @@ export const Navbar = () => {
                         <div>
                                 <ul className='flex flex-row gap-5'>
                                         {isLoggedIn &&
-                                        <>
-                                                <Link to=''><li>Logout</li></Link>
+                                                <>
+                                                <Link to='/myblogs'><li>My Blogs</li></Link>
+                                                <button onClick={handleLogout} className="pointer" >Logout</button>
                                                 <Link to='/write'><li>Write</li></Link>
                                         </>
                                         }
@@ -31,7 +38,6 @@ export const Navbar = () => {
                                                 <Link to='/signin'><li>SignIn</li></Link>
                                                 <Link to='/signup'><li>SignUp</li></Link>
                                         </>}
-                                        
                                 </ul>
                         </div>
                 </div>

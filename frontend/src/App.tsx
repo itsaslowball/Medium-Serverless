@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux'
 import { checkLogIn } from './app/authSlice'
 import { useDispatch } from 'react-redux'
 import { useEffect } from 'react'
+import { MyBlogs } from './pages/MyBlogs'
 
 
 function App() {
@@ -36,24 +37,28 @@ function App() {
               <Home />
             </Element>
           } />
-          <Route path="/signin" element={
-              <Signin />
-          } />
-          <Route path="/signup" element={
-            <Signup />
-          } />
+          
           {isLoggedIn &&
             <>
             <Route path='/blog/:id' element={<Element>
               <Blog />
             </Element>} />
+            <Route path='/myblogs' element={<Element>
+              <MyBlogs />
+            </Element>} />
             <Route path='/write' element={<Element>
               <h1>Write</h1>
             </Element>} />
-            <Route path="*" element={<h1>Not Found</h1>} />
+            <Route path="*" element={<Navigate to='/' replace />} />
           </>
           }
           {!isLoggedIn && <>
+            <Route path="/signin" element={
+              <Signin />
+            } />
+            <Route path="/signup" element={
+              <Signup />
+            } />
             <Route path="*" element={<Navigate to="/signin" replace />} />
           </>}
 

@@ -115,7 +115,7 @@ blogRouter.get('/allblogs', async (c) => {
         return c.json({ blogs: newBlogs, pagination: res });
 });
 
-blogRouter.get('/drafts', async (c) => {
+blogRouter.get('/myblogs', async (c) => {
         // @ts-ignore
         const prisma: PrismaClient = c.get('prisma');
         const userId = c.get('userId')
@@ -128,7 +128,6 @@ blogRouter.get('/drafts', async (c) => {
         const blogs = await prisma.post.findMany({
                 where: {
                         authorId: userId,
-                        published: false
                 },
                 orderBy: {
                         createdAt: sort === 'asc' ? 'asc' : 'desc'
@@ -159,6 +158,9 @@ blogRouter.put('/:id', async (c) => {
         const id = c.req.param('id')
         const userId = c.get('userId')
         const body = await c.req.json();
+
+        console.log(body);
+
         const { success } = updateBlogInput.safeParse(body);
         if (!success) {
                 c.status(400);

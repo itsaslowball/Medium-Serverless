@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import * as api from '../api-client';
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
 export const Blog = () => {
   const { id } = useParams();
@@ -12,6 +13,8 @@ export const Blog = () => {
     queryFn: () => (id ? api.fetchBlogById(id) : null),
     staleTime: 10 * 60000,
   });
+
+  const userId = useSelector((state: any) => state.auth.userId) || localStorage.getItem('userId');
 
   // const deleteMutation = useMutation(api.deleteBlog, {
   //   onSuccess: () => {
@@ -37,6 +40,7 @@ export const Blog = () => {
 
   const post = blog?.post || null;
 
+
   if (isError) {
     return <div className="text-red-500 text-center mt-10">Something went wrong</div>;
   }
@@ -55,14 +59,15 @@ export const Blog = () => {
             <p className="text-gray-700">{post.content}</p>
             <hr className="my-4 border-gray-200" />
 
-
-              <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="border-2 border-black hover:bg-red-700 hover:border-red-700 text-black font-bold py-2 px-4 rounded"
-              >
-                {isDeleting ? 'Deleting...' : 'Delete'}
-              </button>
+              {userId === post.authorId && (
+                <button
+                  onClick={handleDelete}
+                  // disabled={isDeleting}
+                  className="border-2 border-black hover:bg-red-700 hover:border-red-700 text-black font-bold py-2 px-4 rounded"
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete'}
+                </button>
+              )}
           </div>
         )
       )}
