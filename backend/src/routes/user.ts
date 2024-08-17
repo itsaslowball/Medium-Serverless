@@ -1,8 +1,9 @@
 import { Hono } from "hono";
 import { PrismaClient } from '@prisma/client/edge'
-import { sign } from 'hono/jwt'
+import { sign, verify } from 'hono/jwt'
 import { signInInput, signUpInput } from "@priyans34/medium-common";
 import {
+        deleteCookie,
         setCookie,
 } from 'hono/cookie'
 
@@ -12,7 +13,8 @@ export const userRouter = new Hono<{
                 DATABASE_URL: string,
                 JWT_SECRET: string,
                 REFRESH_TOKEN_SECRET: string,
-        }
+        },
+
 }
 >();
 
@@ -110,10 +112,7 @@ userRouter.post('signin', async (c) => {
 
 
         //set the refresh token in the cookie
-        setCookie(c, 'refresh_token', refreshToken, {
-                path: '/',
-                sameSite: 'Strict',
-        });
+        setCookie(c, 'refresh_token', refreshToken);
 
 
         const payload = {
@@ -124,3 +123,40 @@ userRouter.post('signin', async (c) => {
         const token = await sign(payload, secret)
         return c.json({ jwt: token })
 })
+
+userRouter.post('signout', async (c) => {
+        // @ts-ignore
+        const prisma: PrismaClient = c.get('prisma');
+
+        let token = c.req.header('authorization') || "";
+        token = token.split(' ')[1];
+        if (!token) {
+                c.status(401);
+                return c.json({ message: 'Unauthorized' });
+        }
+
+        const secret = c.env?.JWT_SECRET;
+        try {
+                // Verify the token and ensure it returns a valid id
+                const response: any = await verify(token, secret);
+                const id: string = response?.id;
+
+                if (!id) {
+                        c.status(403);
+                        return c.json({ message: 'Unauthorized' });
+                }
+
+                // Update the user record
+                await prisma.user.update({
+                        where: { id },
+                        data: { refreshToken: "" }
+                });
+
+                deleteCookie(c, 'refresh_token')
+                c.status(200);
+                return c.json({ message: 'Signed out successfully' });
+        } catch (error) {
+                c.status(500);
+                return c.json({ message: 'Server error' });
+        }
+});

@@ -15,7 +15,8 @@ export const signup = async (formData: SignUpInput) => {
                         headers: {
                                 "Content-Type": "application/json"
                         },
-                        body: JSON.stringify(formData)
+                        body: JSON.stringify(formData),
+                        credentials: 'include',
                 });
                 const res = await response.json();
                 return res;
@@ -31,7 +32,27 @@ export const signin = async (formData: SignInInput) => {
                         headers: {
                                 "Content-Type": "application/json"
                         },
-                        body: JSON.stringify(formData)
+                        body: JSON.stringify(formData),
+                        credentials: 'include'
+                });
+                const res = await response.json();
+                return res;
+        } catch (error) {
+                console.error(error);
+        }
+}
+
+export const logout = async () => {
+        const token = localStorage.getItem('token');
+        console.log(token);
+        try {
+                const response = await fetch(`${url}/api/v1/user/signout`, {
+                        method: "POST",
+                        headers: {
+                                "Content-Type": "application/json",
+                                authorization: `Bearer ${token}`
+                        },
+                        credentials: 'include'
                 });
                 const res = await response.json();
                 return res;

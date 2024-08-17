@@ -14,8 +14,6 @@ const initialState:InitialStateType = {
 
 interface DecodedToken {
         id: string;
-
-        
 }
 
 const authSlice = createSlice({
@@ -34,6 +32,7 @@ const authSlice = createSlice({
                         localStorage.removeItem('token');
                         state.isLoggedIn = false;
                         state.userId = null;
+                        localStorage.removeItem('userId');
                 },
                 checkLogIn: (state) => {
                         if (localStorage.getItem('token')) {

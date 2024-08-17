@@ -9,7 +9,8 @@ import { blogRouter } from './routes/blog'
 
 const app = new Hono<{
   Bindings: {
-    DATABASE_URL: string
+    DATABASE_URL: string,
+    ORIGIN: string,
   }
 }
   >()
@@ -17,14 +18,15 @@ const app = new Hono<{
 app.use(
   '/*',
   cors({
-    origin: '*',
-    allowHeaders: ['X-Custom-Header', 'Upgrade-Insecure-Requests', 'Content-Type', "authorization"],
-    allowMethods: ['POST', 'GET', 'OPTIONS',"PUT", "DELETE"],
+    origin: 'https://medium-serverless.onrender.com/',
+    allowHeaders: ['X-Custom-Header', 'Upgrade-Insecure-Requests', 'Content-Type', 'authorization'],
+    allowMethods: ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE'],
     exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
     maxAge: 600,
     credentials: true,
   })
 );
+
 
 
  app.use('/*', async (c, next) => { 

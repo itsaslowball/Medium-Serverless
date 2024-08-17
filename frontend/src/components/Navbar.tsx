@@ -2,6 +2,8 @@ import { useDispatch } from "react-redux";
 import { checkLogIn, logout } from "../app/authSlice";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
+import * as api from "../api-client";
 
 export const Navbar = () => {
 
@@ -14,10 +16,20 @@ export const Navbar = () => {
                 state.auth.isLoggedIn
         ); 
 
+        const mutation = useMutation({
+                mutationFn: api.logout,
+                onSuccess: () => { 
+                        dispatch(logout());
+                        isLoggedIn = false;
+                        navigate('/');
+                },
+                onError: (error) => {
+                        console.log(error);
+                }
+        })
+
         const handleLogout = () => {
-                dispatch(logout());
-                isLoggedIn = false;
-                navigate('/');
+                mutation.mutate();
         };
 
 
