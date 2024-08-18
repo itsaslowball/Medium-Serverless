@@ -10,6 +10,7 @@ import { checkLogIn } from './app/authSlice'
 import { useDispatch } from 'react-redux'
 import { useEffect } from 'react'
 import { MyBlogs } from './pages/MyBlogs'
+import { Write } from './pages/Write'
 
 
 function App() {
@@ -47,7 +48,7 @@ function App() {
               <MyBlogs />
             </Element>} />
             <Route path='/write' element={<Element>
-              <h1>Write</h1>
+              <Write />
             </Element>} />
             <Route path="*" element={<Navigate to='/' replace />} />
           </>

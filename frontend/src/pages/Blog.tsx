@@ -1,6 +1,6 @@
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import * as api from '../api-client';
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 
@@ -13,29 +13,31 @@ export const Blog = () => {
     queryFn: () => (id ? api.fetchBlogById(id) : null),
     staleTime: 10 * 60000,
   });
+  const navigate = useNavigate();
+  const location = useLocation();
+  const previousPage = location.state?.from || '/';
 
   const userId = useSelector((state: any) => state.auth.userId) || localStorage.getItem('userId');
+  const queryClient = useQueryClient()
 
-  // const deleteMutation = useMutation(api.deleteBlog, {
-  //   onSuccess: () => {
-  //     // Invalidate the query to refetch the blog list (if applicable)
-  //     queryClient.invalidateQueries('blogs');
-  //     navigate('/'); // Redirect to home or another suitable page
-  //   },
-  // });
+  const deleteMutation = useMutation(
+    {
+      mutationFn: api.deleteBlog,
+      onSuccess: () => {
+        setIsDeleting(false);
+        navigate(previousPage);
+        queryClient.invalidateQueries({ queryKey: ['allBlogs1'] });
+        queryClient.invalidateQueries({ queryKey: ['myBlogs'] });
+
+      },
+    }
+
+  );
 
   const handleDelete = async () => {
-    if (!id) return; // Handle case where id is undefined
-
+    if (!id) return;
     setIsDeleting(true);
-    try {
-      // await deleteMutation.mutateAsync(id);
-    } catch (error) {
-      console.error("Error deleting blog:", error);
-      // Handle error appropriately (e.g., show an error message to the user)
-    } finally {
-      setIsDeleting(false);
-    }
+    deleteMutation.mutate(id);
   };
 
   const post = blog?.post || null;

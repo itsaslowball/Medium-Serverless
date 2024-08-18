@@ -108,3 +108,35 @@ export const updateBlog = async (id: string, data: any) => {
         const result = await res.json();
         return result;
 };
+
+export const writeBlog = async (data: any) => {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${url}/api/v1/blog`, {
+                method: "POST",
+                headers: {
+                        "Content-Type": "application/json",
+                        authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(data),
+        });
+
+        const result = await res.json();
+        return result;
+}
+
+export const deleteBlog = async (id: string) => { 
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${url}/api/v1/blog/${id}`, {
+                method: "DELETE",
+                headers: {
+                        authorization: `Bearer ${token}`
+                }
+        });
+
+        if (!res.ok) {
+                throw new Error("Failed to delete blog");
+        }
+
+        const result = await res.json();
+        return result;
+}

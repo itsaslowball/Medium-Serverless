@@ -36,7 +36,9 @@ export const Navbar = () => {
 
         return (
                 <div className='flex flex-row items-center min-h-16 border-b-2 border-slate-300 justify-between'>
-                        <div className="text-3xl font-extrabold">Medium</div>
+                        <Link to='/'>
+                                <div className="text-3xl font-extrabold">Medium</div>
+                        </Link>
 
                         <div>
                                 <ul className='flex flex-row gap-5'>
