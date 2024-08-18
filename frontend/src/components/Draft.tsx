@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
 export const Draft = ({ blogs, handlePublish }: any) => {
         if (!blogs || blogs.length === 0) {

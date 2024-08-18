@@ -1,7 +1,7 @@
 import * as api from '../api-client';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import {  useNavigate } from 'react-router-dom';
 
 export const Home = () => {
         const [page, setPage] = useState(1);
