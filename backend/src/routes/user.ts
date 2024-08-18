@@ -125,7 +125,7 @@ userRouter.post('signin', async (c) => {
 
         const payload = {
                 id: user.id,
-                exp: Math.floor(Date.now() / 1000) + 60 * 60, // Token expires in 5 minutes
+                exp: Math.floor(Date.now() / 1000) + 60 * 60, 
         }
         const secret = c.env?.JWT_SECRET
         const token = await sign(payload, secret)
@@ -169,5 +169,69 @@ userRouter.post('signout', async (c) => {
         } catch (error) {
                 c.status(500);
                 return c.json({ message: 'Server error' });
+        }
+});
+
+type JwtPayload = {
+        id: string;
+};
+
+userRouter.get('refresh', async (c) => {
+        // @ts-ignore
+        const prisma: PrismaClient = c.get('prisma');
+
+        const token = getCookie(c, 'refresh_token');
+        if (!token) {
+                c.status(401);
+                return c.json({ message: 'Token Not Found' });
+        }
+
+        const secret = c.env?.REFRESH_TOKEN_SECRET;
+        let response: JwtPayload | null = null;
+
+        try {
+                response = await verify(token, secret) as JwtPayload;
+        } catch (error) {
+                c.status(401);
+                return c.json({ message: 'Unauthorized' });
+        }
+
+        const id = response?.id;
+
+        if (!id) {
+                c.status(401);
+                return c.json({ message: 'Unauthorized' });
+        }
+
+        try {
+                const user = await prisma.user.findUnique({
+                        where: {
+                                id,
+                        },
+                });
+
+                if (!user) {
+                        c.status(401);
+                        return c.json({ message: 'User Not Found' });
+                }
+
+                if(user.refreshToken !== token) {
+                        c.status(401);
+                        return c.json({ message: 'Token Expired or Unavailable' });
+                }
+
+                const accessPayload = {
+                        id: user.id,
+                        exp: Math.floor(Date.now() / 1000) + 60 * 60, // Token expires in 5 minutes
+                }
+                const access_token = await sign(accessPayload, c.env?.JWT_SECRET);
+
+                c.status(200);
+                return c.json({ jwt: access_token });
+
+        } catch (error) {
+                console.error(error);
+                c.status(500);
+                return c.json({ message: 'Internal Server Error' });
         }
 });
